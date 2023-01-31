@@ -8,9 +8,11 @@
 #     month:[
 #         [
 #             "XY czk" (czk),
-#             "sum XY" (eur)
+#             "XY eur" (eur),
+#             "haircuts sum XY" (eur)
 #         ],
-#         "XY + YZ + ..."(individual workdays income from haircuts)
+#         "XY + YZ + ..." (individual workdays income from haircuts),
+#         "customers count: XY"
 #     ]
 # }
 
@@ -330,7 +332,7 @@ def parse_income_data(content):
     return overall_stats
 
 @timing
-def export_all_stats(overall_stats):
+def export_all_stats(overall_stats, output_file):
     """Export both the individual year and the overall stats into .csv-s and .png-s."""
 
     overall_sum = []
@@ -341,8 +343,8 @@ def export_all_stats(overall_stats):
     # income summary comparison and income sum into .png file.
     # And export the overall stats as well.
     for year, content in overall_stats.items():
-        export_year_csv(year, content, f'stats/{year}/{args.output}')
-        export_year_png(year, f'stats/{year}/{args.output}')
+        export_year_csv(year, content, f'stats/{year}/{output_file}')
+        export_year_png(year, f'stats/{year}/{output_file}')
         months = list(content.keys())
         months.sort(key=lambda x: datetime.datetime.strptime(x,'%B'))
         for month in months:
@@ -413,7 +415,7 @@ if __name__ == "__main__":
         overall_stats = parse_income_data(content)
 
         logging.info(f"Exporting all stats.")
-        export_all_stats(overall_stats)
+        export_all_stats(overall_stats, args.output if args.output.endswith('.csv') else args.output + '.csv')
 
     except Exception as e:
         print(f'Following error occured: {e}')
