@@ -1,2 +1,3 @@
 stats/
 *.txt
+.DS_Store
