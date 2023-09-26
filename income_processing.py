@@ -58,7 +58,6 @@ def get_month_index(month, string = False):
 
     return str(list(calendar.month_name).index(month)).zfill(2) if string else list(calendar.month_name).index(month)
 
-@timing
 def get_convert_rate(src_currency, dst_currency, month, year):
     """Helper function to obtain convert rates for a given currency conversion."""
 
@@ -80,7 +79,7 @@ def get_column_index(column):
         if col == column:
             return idx
 
-@timing
+
 def read_file(input_file):
     """Function which reads and returns the content of a given file."""
 
@@ -98,7 +97,7 @@ def read_file(input_file):
     
     return content
 
-@timing
+
 def export_year_csv(year, year_stats, output_file):
     """Creates a year statistics summary csv file from a given csv file."""
 
@@ -124,7 +123,7 @@ def export_year_csv(year, year_stats, output_file):
             year_stats[month].update({Columns.MONTH : month})
             writer.writerow(year_stats[month])
 
-@timing
+
 def load_from_csv(csv_file, columns):
     """Loads the desired columns from the csv file."""
 
@@ -149,7 +148,7 @@ def load_from_csv(csv_file, columns):
                         res_struct[column].append(row[col_idx])
     return res_struct
 
-@timing
+
 def export_two_bar_comparison(title, data, columns, labels, output_file):
     """Export the two bar comparison for given columns into .png file.
        columns is a list of column names where indivudual index represent:
@@ -180,7 +179,7 @@ def export_two_bar_comparison(title, data, columns, labels, output_file):
     fig.tight_layout()
     plt.savefig(output_file, dpi=200)
 
-@timing
+
 def export_plot(title, x_data, y_data, labels, output_file):
     """Export the plot for given x, y data into .png file."""
 
@@ -198,7 +197,7 @@ def export_plot(title, x_data, y_data, labels, output_file):
     fig.tight_layout()
     plt.savefig(output_file, dpi=200)
 
-@timing
+
 def export_two_bar_comparison_and_sum_plot(title, data, columns, labels, output_file):
     """Export the two bar comparison for given columns into .png file.
        columns is a list of column names where indivudual index represent:
@@ -229,7 +228,7 @@ def export_two_bar_comparison_and_sum_plot(title, data, columns, labels, output_
     fig.tight_layout()
     plt.savefig(output_file, dpi=200)
 
-@timing
+
 def export_year_png(year, output_file):
     """Creates a year statistics summary .png file from a given csv file."""
 
@@ -331,7 +330,6 @@ def parse_income_data(content):
 
     return overall_stats
 
-@timing
 def export_all_stats(overall_stats, output_file):
     """Export both the individual year and the overall stats into .csv-s and .png-s."""
 
