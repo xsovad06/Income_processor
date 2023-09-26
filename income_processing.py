@@ -261,6 +261,7 @@ def parse_income_data(content):
     curr_year = None
     year_stats = defaultdict(dict)
     overall_stats = defaultdict(dict)
+    INT_FLOAT_REGEX_GROUP = '(\d+(\.|,)?\d+)'
 
     # Main loop for content processing and storing in the year-based structure
     for line in content.splitlines():
@@ -276,7 +277,7 @@ def parse_income_data(content):
             pass
 
         # Match czk month income value
-        elif match := re.match(r'(\d+)\s*czk', line):
+        elif match := re.match(rf'{INT_FLOAT_REGEX_GROUP}\s*czk', line):
             czk_income = float(re.sub(",", ".", match.group(1)))
             year_stats[curr_month][Columns.WAGE_CZK.value] = czk_income
 
@@ -286,7 +287,7 @@ def parse_income_data(content):
             year_stats[curr_month][Columns.INCOME_SUM.value] = round(wage_eur)
 
         # Match eur month income value
-        elif match := re.match(r'(\d+)\s*eur', line):
+        elif match := re.match(rf'{INT_FLOAT_REGEX_GROUP}\s*eur', line):
             wage_eur = float(re.sub(",", ".", match.group(1)))
             # Add to the EUR wage if both the czk and eur wage have been obtained.
             if Columns.INCOME_SUM.value in year_stats[curr_month]:
@@ -299,7 +300,7 @@ def parse_income_data(content):
                 year_stats[curr_month][Columns.INCOME_SUM.value] = wage_eur
 
         # Match eur month income value
-        elif match := re.match(r'haircuts\s+sum\s+([\d|\,|\.]+)', line):
+        elif match := re.match(rf'haircuts\s+sum\s+{INT_FLOAT_REGEX_GROUP}', line):
             year_stats[curr_month][Columns.HAIRCUT_EUR.value] = float(re.sub(",", ".", match.group(1)))
             # Add the eur month income value into the income_sum place
             if Columns.INCOME_SUM.value in year_stats[curr_month]:
@@ -308,11 +309,11 @@ def parse_income_data(content):
                 year_stats[curr_month][Columns.INCOME_SUM.value] = round(year_stats[curr_month][Columns.HAIRCUT_EUR.value])
 
         # Match number of customers
-        elif match := re.match(r'customers\s+count:\s*(\d+)', line):
+        elif match := re.match(r'customers\s+count\s*(\d+)', line):
             year_stats[curr_month][Columns.NUMBER_OF_CUSTOMERS.value] = int(match.group(1))
 
         # Match indivudual day income in eur
-        elif re.match(r'([\d|\,|\.]+\s*\+\s*)+[\d|\,|\.]+', line):
+        elif re.match(rf'({INT_FLOAT_REGEX_GROUP}\s*\+\s*)+{INT_FLOAT_REGEX_GROUP}', line):
             individual_days = [float(re.sub(",", ".", i)) for i in line.split() if i != '+']
             year_stats[curr_month][Columns.HAIRCUT_DAYS.value] = len(individual_days)
             year_stats[curr_month][Columns.MAX_HAIRCUT_DAY_INCOME.value] = max(individual_days)
