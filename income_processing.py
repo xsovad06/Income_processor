@@ -25,6 +25,7 @@ import datetime
 import calendar
 from collections import defaultdict
 from enum import StrEnum
+from typing import List, Dict, Union
 from forex_python.converter import CurrencyRates
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,12 +54,12 @@ class Columns(StrEnum):
     NUMBER_OF_CUSTOMERS = "Number of customers"
     MAX_HAIRCUT_DAY_INCOME = "Max haircut day income (EUR)"
 
-def get_month_index(month, string = False):
+def get_month_index(month: int, as_string: bool = False) -> Union[int, str]:
     """Helper function to obtain convert rates for a given currency conversion."""
 
-    return str(list(calendar.month_name).index(month)).zfill(2) if string else list(calendar.month_name).index(month)
+    return str(list(calendar.month_name).index(month)).zfill(2) if as_string else list(calendar.month_name).index(month)
 
-def get_convert_rate(src_currency, dst_currency, month, year):
+def get_convert_rate(src_currency: str, dst_currency: str, month: str, year: int) -> int:
     """Helper function to obtain convert rates for a given currency conversion."""
 
     try:
@@ -70,9 +71,9 @@ def get_convert_rate(src_currency, dst_currency, month, year):
         else:
             return c.get_rate(src_currency, dst_currency)
     except:
-        return 0.042
+        return 0.040
 
-def get_column_index(column):
+def get_column_index(column: Columns) -> int:
     """Returns the appropriate column index."""
 
     for idx, col in enumerate(Columns):
@@ -80,7 +81,7 @@ def get_column_index(column):
             return idx
 
 
-def read_file(input_file):
+def read_file(input_file: str) -> str:
     """Function which reads and returns the content of a given file."""
 
     # Check if input file exists
@@ -98,7 +99,7 @@ def read_file(input_file):
     return content
 
 
-def export_year_csv(year, year_stats, stats_folder, output_file):
+def export_year_csv(year: str, year_stats: Dict, stats_folder: str, output_file: str) -> None:
     """Creates a year statistics summary csv file from a given csv file."""
 
     # Check if exist the path
@@ -124,7 +125,7 @@ def export_year_csv(year, year_stats, stats_folder, output_file):
             writer.writerow(year_stats[month])
 
 
-def load_from_csv(csv_file, columns):
+def load_from_csv(csv_file: str, columns: Columns) -> defaultdict(list):
     """Loads the desired columns from the csv file."""
 
     res_struct = defaultdict(list)
@@ -149,7 +150,13 @@ def load_from_csv(csv_file, columns):
     return res_struct
 
 
-def export_two_bar_comparison(title, data, columns, labels, output_file):
+def export_two_bar_comparison(
+        title: str,
+        data: Dict[str, List[Union[int, float, str]]],
+        columns: List[str],
+        labels: List[str],
+        output_file: str
+    ) -> None:
     """Export the two bar comparison for given columns into .png file.
        columns is a list of column names where indivudual index represent:
        [0] = x_axix data,
@@ -180,7 +187,12 @@ def export_two_bar_comparison(title, data, columns, labels, output_file):
     plt.savefig(output_file, dpi=200)
 
 
-def export_plot(title, x_data, y_data, labels, output_file):
+def export_plot(
+        title: str,
+        x_data: List[Union[int, float, str]],
+        y_data: List[Union[int, float, str]],
+        labels: List[str], output_file: str
+    ) -> None:
     """Export the plot for given x, y data into .png file."""
 
     x = np.arange(len(x_data))
@@ -198,7 +210,12 @@ def export_plot(title, x_data, y_data, labels, output_file):
     plt.savefig(output_file, dpi=200)
 
 
-def export_two_bar_comparison_and_sum_plot(title, data, columns, labels, output_file):
+def export_two_bar_comparison_and_sum_plot(
+        title: str,
+        data: List[Union[int, float, str]],
+        columns: List[Union[int, float, str]],
+        labels: List[str], output_file: str
+    ) -> None:
     """Export the two bar comparison for given columns into .png file.
        columns is a list of column names where indivudual index represent:
        [0] = x_axix data,
@@ -229,7 +246,7 @@ def export_two_bar_comparison_and_sum_plot(title, data, columns, labels, output_
     plt.savefig(output_file, dpi=200)
 
 
-def export_year_png(year, input_file, stats_folder):
+def export_year_png(year: str, input_file: str, stats_folder: str) -> None:
     """Creates a year statistics summary .png file from a given csv file."""
 
     columns = [Columns.MONTH, Columns.WAGE_EUR, Columns.HAIRCUT_EUR, Columns.INCOME_SUM]
@@ -254,7 +271,7 @@ def export_year_png(year, input_file, stats_folder):
     )
 
 @timing
-def parse_income_data(content):
+def parse_income_data(content: str) -> defaultdict(dict):
     """Parsing of the income data into desired year-based structure of dictionaries."""
 
     curr_month = None
@@ -331,7 +348,7 @@ def parse_income_data(content):
 
     return overall_stats
 
-def export_all_stats(overall_stats, stats_folder, output_file):
+def export_all_stats(overall_stats: defaultdict(dict), stats_folder: str, output_file: str) -> None:
     """Export both the individual year and the overall stats into .csv-s and .png-s."""
 
     overall_sum = []
