@@ -98,14 +98,14 @@ def read_file(input_file):
     return content
 
 
-def export_year_csv(year, year_stats, output_file):
+def export_year_csv(year, year_stats, stats_folder, output_file):
     """Creates a year statistics summary csv file from a given csv file."""
 
     # Check if exist the path
-    if not os.path.exists("stats"):
-        os.makedirs("stats")
-    if not os.path.exists(f"stats/{year}"):
-        os.makedirs(f"stats/{year}")
+    if not os.path.exists(stats_folder):
+        os.makedirs(stats_folder)
+    if not os.path.exists(os.path.join(stats_folder, year)):
+        os.makedirs(os.path.join(stats_folder, year))
 
     # Create a new CSV file
     with open(output_file, mode='w') as csv_file:
@@ -229,11 +229,11 @@ def export_two_bar_comparison_and_sum_plot(title, data, columns, labels, output_
     plt.savefig(output_file, dpi=200)
 
 
-def export_year_png(year, output_file):
+def export_year_png(year, input_file, stats_folder):
     """Creates a year statistics summary .png file from a given csv file."""
 
     columns = [Columns.MONTH, Columns.WAGE_EUR, Columns.HAIRCUT_EUR, Columns.INCOME_SUM]
-    data = load_from_csv(output_file, columns)
+    data = load_from_csv(input_file, columns)
 
     # Comparison of the wage and haircut income
     export_two_bar_comparison(
@@ -241,7 +241,7 @@ def export_year_png(year, output_file):
         data,
         columns,
         ["Month", "EUR"],
-        f"stats/{year}/Income_summary.png"
+        os.path.join(stats_folder, year, "Income_summary.png")
     )
 
     # Overall Sum plot for the current year income summary
@@ -250,7 +250,7 @@ def export_year_png(year, output_file):
         data[Columns.MONTH],
         data[Columns.INCOME_SUM], 
         ["Month", "EUR"],
-        f"stats/{year}/income_sum.png"
+        os.path.join(stats_folder, year, "Income_sum.png")
     )
 
 @timing
@@ -331,19 +331,21 @@ def parse_income_data(content):
 
     return overall_stats
 
-def export_all_stats(overall_stats, output_file):
+def export_all_stats(overall_stats, stats_folder, output_file):
     """Export both the individual year and the overall stats into .csv-s and .png-s."""
 
     overall_sum = []
     months_years = []
     haircuts = []
     wages = []
+    stats_overall_folder = os.path.join(stats_folder, "overall")
     # For individual year export the stats into the csv file,
     # income summary comparison and income sum into .png file.
     # And export the overall stats as well.
     for year, content in overall_stats.items():
-        export_year_csv(year, content, f'stats/{year}/{output_file}')
-        export_year_png(year, f'stats/{year}/{output_file}')
+        csv_file_name = os.path.join(stats_folder, str(year), output_file)
+        export_year_csv(str(year), content, stats_folder, csv_file_name)
+        export_year_png(str(year), csv_file_name, stats_folder)
         months = list(content.keys())
         months.sort(key=lambda x: datetime.datetime.strptime(x,'%B'))
         for month in months:
@@ -352,8 +354,8 @@ def export_all_stats(overall_stats, output_file):
             haircuts.append(content[month].get(Columns.HAIRCUT_EUR, 0))
             wages.append(content[month].get(Columns.WAGE_EUR, 0))
 
-    if not os.path.exists(f"stats/overall"):
-        os.makedirs(f"stats/overall")
+    if not os.path.exists(stats_overall_folder):
+        os.makedirs(stats_overall_folder)
 
     # Overall Sum plot for the income summary
     export_plot(
@@ -361,7 +363,7 @@ def export_all_stats(overall_stats, output_file):
         months_years,
         overall_sum, 
         ["Date", "EUR"],
-        f"stats/overall/sum.png"
+        os.path.join(stats_overall_folder, "Sum.png")
     )
     # Overall two bar comparison for the income summary
     export_two_bar_comparison(
@@ -374,7 +376,7 @@ def export_all_stats(overall_stats, output_file):
         },
         ["m/y","wage","haircut","sum"],
         ["Date[M/Y]", "EUR"],
-        f"stats/overall/comparison.png"
+        os.path.join(stats_overall_folder, "Comparison.png")
     )
     # Overall two bar comparison with sum plot for the income summary
     export_two_bar_comparison_and_sum_plot(
@@ -387,7 +389,7 @@ def export_all_stats(overall_stats, output_file):
         },
         ["m/y","wage","haircut","sum"],
         ["Date[M/Y]", "EUR"],
-        f"stats/overall/sum_comparison.png"
+        os.path.join(stats_overall_folder, "Sum_comparison.png")
     )
 
 
@@ -395,7 +397,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="path to the input file to be processed")
-    parser.add_argument("output", help="path to the output file")
+    parser.add_argument("-s", "--stats", default="stats", help="path to the overall output folder")
+    parser.add_argument("output", help="path to the .csv output file for individual year statistics")
     args = parser.parse_args()
 
     try:
@@ -414,7 +417,7 @@ if __name__ == "__main__":
         overall_stats = parse_income_data(content)
 
         logging.info(f"Exporting all stats.")
-        export_all_stats(overall_stats, args.output if args.output.endswith('.csv') else args.output + '.csv')
+        export_all_stats(overall_stats, args.stats, args.output if args.output.endswith('.csv') else args.output + '.csv')
 
     except Exception as e:
         print(f'Following error occured: {e}')
