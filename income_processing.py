@@ -6,11 +6,9 @@
 # structure:
 # Year: {
 #     month:[
-#         [
-#             "XY czk" (czk),
-#             "XY eur" (eur),
-#             "haircuts sum XY" (eur)
-#         ],
+#         "XY czk" (czk),
+#         "XY eur" (eur),
+#         "haircuts sum XY" (eur),
 #         "XY + YZ + ..." (individual workdays income from haircuts),
 #         "customers count: XY"
 #     ]
